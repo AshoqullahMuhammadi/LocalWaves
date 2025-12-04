@@ -1,0 +1,348 @@
+# LocalWave - Product Requirements Document
+
+## 1. Executive Summary
+
+LocalWave is a native Android audio player app (Kotlin) focused on playing local audio files stored on the device. The app targets users who want a powerful, reliable, and privacy-friendly player with full-featured playback controls, playlists, library management, background playback (including playing while the device is locked or the app is in background), notification & lock screen controls, dialogs with playback progress (mini-player and full dialog/player window), and advanced controls like repeat, shuffle, seek, and playback speed. The app will use modern Android best practices (ExoPlayer, MediaSession/MediaBrowser, Foreground Service) to ensure robust behavior.
+
+## 2. Goals & Non-Goals
+
+### Primary Goals
+
+* Play local audio files (MP3, M4A/AAC, WAV, OGG, FLAC) reliably.
+* Background playback with media notification and lock screen controls.
+* Full progress UI in dialogs and full screen player with waveform/progress bar.
+* Playlist creation, editing, import/export (M3U support optional).
+* Robust handling of audio focus, interruptions (calls), and device sleep.
+* Clean, responsive UI with accessibility and localization readiness.
+
+### Out of Scope (v1)
+
+* Streaming from the internet or cloud services.
+* DRM-protected playback.
+* Social sharing of tracks (beyond system share intent).
+
+## 3. Target Users & Personas
+
+* **Commuter Karim** — wants a simple player for local music with reliable background playback and notification controls.
+* **Developer Sara** — needs a player that supports playlists, gapless playback and adjustable playback speed to review audio.
+* **Audio enthusiast Ali** — wants lossless format support (FLAC), metadata display, and a simple equalizer (optional v2).
+
+## 4. Success Metrics
+
+* Playback uptime (no crashes) — target 99.9% for normal usage.
+* Background playback reliability: 99% of sessions survive leaving app / locking device.
+* App rating >= 4.3 within first 1000 users.
+* Time to start playback from track tap < 500ms (typical local file).
+
+## 5. Key Features (User-Facing)
+
+### 5.1 Library & Scanning
+
+* Scan local storage for audio files (user-selectable folders and full-device scan).
+* Metadata extraction: title, artist, album, duration, album art, track number, year, genre.
+* Display list/grouped views: All tracks, Albums, Artists, Playlists, Folders.
+
+### 5.2 Playback Core
+
+* Play / Pause / Stop / Next / Previous.
+* Seek with precise scrubbing and a progress bar showing current position and duration.
+* Playback speed control (0.5x - 2.0x in steps) — optional if performance allows for formats.
+* Repeat modes: none, repeat-one, repeat-all; shuffle toggle.
+* Crossfade (optional v2) and gapless playback.
+
+### 5.3 Background Playback & Media Session
+
+* Foreground service with MediaStyle notification showing artwork, title, artist, playback controls and progress.
+* MediaSessionCompat integration to handle hardware media buttons and car/headset controls.
+* Lock screen controls and metadata.
+* Resume playback after interruptions if user preference allows.
+
+### 5.4 Dialogs & Mini-Players (Progress Showing)
+
+* **Now-playing dialog** (modal) that can be opened from any screen: shows full player controls, progress bar, waveform or album art, and seek.
+* **Mini player** persistent at bottom of lists: collapsible to full dialog or screen; shows current track, play/pause, and progress scrubber.
+* **Floating dialog/overlay** (optional) for quick controls while browsing.
+
+### 5.5 Playlists
+
+* Create, rename, delete playlists.
+* Add/remove tracks, reorder (drag & drop), import/export M3U.
+
+### 5.6 File & Folder Playback
+
+* Play individual files or folder queues; queue management (add next, play next, clear queue).
+
+### 5.7 Search & Filters
+
+* Search tracks/artists/albums with live results.
+* Filter by file type, bitrate, duration, or folder.
+
+### 5.8 Notifications & Quick Actions
+
+* Play/pause, next/prev, open app actions.
+* Show progress (via chronometer or progress bar) and artwork.
+
+### 5.9 Session & State Persistence
+
+* Save playback queue, position, and app preferences. Restore on app restart.
+
+### 5.10 Settings
+
+* Scan frequency (manual/auto), rescan, folder selection.
+* Playback settings: gapless, crossfade length, default playback speed, headset behavior.
+* Notification appearance: action count, persistent.
+* Theme: light/dark/automatic.
+
+### 5.11 Permissions & Storage Access
+
+* Use Android scoped storage best practices (Storage Access Framework / MediaStore) to read audio files.
+
+### 5.12 Accessibility & Localization
+
+* Fully labeled controls for TalkBack, support RTL, localized strings.
+
+### 5.13 Offline-First & Privacy
+
+* All metadata stored locally; no external analytics by default (opt-in).
+
+## 6. Detailed Functional Requirements
+
+Each requirement has an ID for acceptance criteria.
+
+### 6.1 Library Scanning (REQ-LIB-001)
+
+* App must be able to scan the device for audio media using MediaStore and optionally allow folder-based selection via SAF.
+* UI shows scanning progress and estimated found count.
+* Parsed metadata stored in a local SQLite (Room) database for fast queries.
+
+**Acceptance:** Scanning finds >95% of sample device files in test set; UI shows results within 5s for 1000 tracks (device-dependent).
+
+### 6.2 Playback Engine (REQ-PLAY-001)
+
+* Use ExoPlayer as the playback engine.
+* Player must expose core actions: play, pause, stop, seekTo(ms), prepare(mediaItem), setPlaybackParameters(speed).
+* ExoPlayer must run in a dedicated Foreground Service when the app goes to background.
+
+**Acceptance:** Seek and play operations complete without UI thread blocking.
+
+### 6.3 MediaSession & Notifications (REQ-MEDIA-001)
+
+* Implement MediaSessionCompat and Notification with MediaStyle.
+* Notification must show artwork (if available), title, artist, and Play/Pause/Next/Prev actions.
+* Notification must be sticky (foreground) while playback is active.
+
+**Acceptance:** Media controls work from notification and lock screen; hardware buttons control playback.
+
+### 6.4 Background & Audio Focus (REQ-AF-001)
+
+* Use AudioManager / AudioAttributes to request audio focus and handle focus changes (ducking, loss, transient loss).
+* Pause on phone calls and optionally resume after call ends based on user setting.
+
+**Acceptance:** Focus changes correctly pause/resume or duck playback.
+
+### 6.5 Dialog Player with Progress (REQ-DLG-001)
+
+* When the user opens the now-playing dialog, show:
+  * Album art
+  * Track title / artist / album
+  * Large seek bar with current time / total duration
+  * Play/Pause, Next, Prev, Shuffle, Repeat
+  * Playback speed selector and a small queue view
+* Seek interactions must reflect immediately in the ExoPlayer and in the notification.
+
+**Acceptance:** Seeking updates player position and notification progress in under 200ms for local files.
+
+### 6.6 Mini-Player & Persistent Controls (REQ-MINI-001)
+
+* A bottom mini-player shows current track and a small progress strip. Tapping expands to full dialog.
+
+**Acceptance:** Mini-player updates in real-time and survives orientation changes.
+
+### 6.7 Queue Management (REQ-QUEUE-001)
+
+* Add to queue, move items, remove items, play next, clear queue.
+
+**Acceptance:** Queue operations reflect instantly in playback order.
+
+### 6.8 Playlist Features (REQ-PL-001)
+
+* Create/edit/delete playlists stored in Room; export/import playlist files.
+
+**Acceptance:** Playlists persist across app restarts.
+
+### 6.9 File Format Support (REQ-FMT-001)
+
+* Must support MP3, M4A/AAC, WAV, OGG, FLAC (subject to device codec availability).
+
+**Acceptance:** Playback of each format verified on test device/emulator.
+
+### 6.10 Search & Filters (REQ-SEARCH-001)
+
+* Real-time search with prioritized results; filters by folder, duration, bitrate.
+
+**Acceptance:** Search returns within 200ms for 10k tracks (index-based queries).
+
+### 6.11 Persistence & Settings (REQ-PREF-001)
+
+* Remember last played track, position, queue, and user preferences.
+
+**Acceptance:** After kill and restart, user resumes where left off if setting enabled.
+
+## 7. UX & UI Flows
+
+### 7.1 Primary Flow — Playing a Single Track
+
+1. User taps a track in the library list.
+2. Mini-player appears showing track & starts playing.
+3. User taps mini-player → Now-playing dialog opens with full controls and progress.
+4. User drags the seek bar → seek occurs and progress updates.
+
+### 7.2 Background Playback Flow
+
+1. User starts playback.
+2. Press home or lock screen → playback continues; foreground service shows notification with controls.
+3. User uses lock-screen or notification controls to pause/resume/skip.
+
+### 7.3 Playlist Creation Flow
+
+1. Long-press track -> Add to playlist -> Choose existing or create new.
+2. Manage playlist via Playlists screen (reorder, delete, rename).
+
+## 8. Architecture & Technical Notes
+
+### Suggested Architecture
+
+MVVM + Repository pattern + Room DB.
+
+### Key Components
+
+* **UI**: Activities / Fragments / Compose — keep view logic light.
+* **ViewModel**: Exposes LiveData/Flow for UI.
+* **Repository**: Manages MediaStore queries and Room DB access.
+* **PlayerService**: Foreground service hosting ExoPlayer and MediaSessionCompat.
+* **MediaSessionConnector / PlayerNotificationManager** (ExoPlayer helpers) to bind metadata to notification.
+
+### Libraries & SDKs
+
+* ExoPlayer (stable version compatible with target SDK)
+* AndroidX: core-ktx, lifecycle, room, media, fragments
+* Kotlin coroutines + Flow
+* Glide or Coil for artwork loading
+* Accompanist/Jetpack Compose (optional) if building with Compose
+
+### Android Specifics
+
+* Target SDK: latest stable (use compatibility for modern background restrictions). Min SDK: 21+ recommended.
+* Permissions: READ_EXTERNAL_STORAGE for Android <= 12; for Android 13+, use READ_MEDIA_AUDIO permission. Also support SAF for folder selection.
+* Use Foreground Service with `startForeground()` and persistent notification to keep playback alive.
+* Handle Doze/Battery optimizations: prompt user to exclude app from battery optimization if necessary for reliable long-play sessions (explainable to user).
+
+## 9. Data Model (Room) — High Level
+
+* **Track** { id, uri, title, artist, album, durationMs, filePath, mimeType, size, bitrate, dateAdded, artworkUri }
+* **Album** { id, title, artist, artworkUri, trackCount }
+* **Artist** { id, name }
+* **Playlist** { id, name, createdAt }
+* **PlaylistItem** { id, playlistId, trackId, position }
+
+## 10. Permissions & Privacy
+
+* **Runtime permissions**: READ_MEDIA_AUDIO (Android 13+), READ_EXTERNAL_STORAGE (Android 12 and below). Request with context & explanation.
+* **Scoped storage**: Prefer MediaStore APIs to retrieve media; use SAF to grant folder access for user-specified directories.
+* **Privacy**: No user data sent to servers; analytics optional and opt-in.
+
+## 11. Error Handling & Edge Cases
+
+* File missing / moved: detect and gracefully skip with toast and remove from DB index if missing.
+* Corrupt file: catch playback errors and notify user with retry option.
+* Headset unplug: if playing, pause on unplug (configurable).
+* Storage permission revoked at runtime: show dialog guiding user to regrant permission via app settings.
+
+## 12. Testing & QA
+
+* Unit tests for repository and ViewModel logic.
+* Integration tests for MediaService and notification actions (use Robolectric or instrumentation tests).
+* Manual tests across Android versions (21–current) for background service, lock screen, and audio focus.
+* Test on devices with multiple audio codecs and external audio devices (Bluetooth, wired).
+
+## 13. Analytics & Crash Reporting (Optional)
+
+* Use Firebase Crashlytics (opt-in) or local logging. Keep analytics minimal and privacy-friendly.
+
+## 14. Accessibility & Localization
+
+* Provide contentDescription for all actionable UI elements.
+* Support dynamic font sizes, high-contrast mode and RTL languages.
+* Localize strings and date/time formats.
+
+## 15. Performance & Size Considerations
+
+* Keep initial APK size reasonable; ExoPlayer adds weight—use modular ExoPlayer artifacts to include only what is needed.
+* Lazy load album art; cache with Coil/Glide.
+
+## 16. Release Checklist (v1)
+
+* [ ] Core playback (ExoPlayer) integrated and tested on device.
+* [ ] Foreground service with MediaStyle notification working.
+* [ ] Library scan & DB indexing complete.
+* [ ] Now-playing dialog and mini-player implemented.
+* [ ] Queue and playlist management working.
+* [ ] Permissions flow tested across API levels.
+* [ ] Unit & integration tests added.
+* [ ] Accessibility and localization basics implemented.
+* [ ] Beta testing with 10–50 users completed.
+
+## 17. Future Enhancements (v2+)
+
+* Equalizer & audio effects.
+* Cloud backup for playlists and settings.
+* Streaming support (HTTP/HLS).
+* Visualizer & waveform scrubber.
+* Smart playlists and recommendations.
+
+## 18. Implementation Timeline (Suggested Milestones)
+
+* Week 1: Project scaffold, ExoPlayer integration, PlayerService + notification.
+* Week 2: Media scan, Room DB, library UI, mini-player.
+* Week 3: Now-playing dialog, queue & playlist features.
+* Week 4: Settings, permissions, polish, testing & bugfixing.
+
+## 19. Acceptance Criteria Summary
+
+* App can play local audio files and continue playing in the background with notification and lock screen controls.
+* Now-playing dialog and mini-player show accurate progress and respond to seeks immediately.
+* Playlists persist and queue operations are correct.
+* App handles interruptions and audio focus gracefully.
+
+## 20. Appendix — Android Implementation Notes
+
+### PlayerService Responsibilities
+
+* Own ExoPlayer instance
+* Create MediaSessionCompat and set active when playing
+* Build and update Notification with `PlayerNotificationManager` (ExoPlayer) or custom Notification with MediaStyle
+* Expose Binder for UI components to bind (optional) or use a shared ViewModel + repository with event bus (Coroutine Flow/SharedFlow)
+
+### Notification Progress
+
+* Use `NotificationCompat.Builder.setProgress(max, progress, false)` for deterministic progress OR use `setChronometer()` with `NotificationCompat.MediaStyle` when appropriate.
+* Update notification periodically (e.g., every 1s) when playing; ensure updates are efficient to avoid battery drain.
+
+### Seek Synchronization
+
+* UI should subscribe to player position updates (ExoPlayer `addListener` + `player.currentPosition`) and throttle UI updates (e.g., 200ms).
+* When user scrubs, show a transient preview position and call `player.seekTo()` on release (or continuously if you want live scrub).
+
+### Media Buttons & RemoteControl
+
+* Handle `onMediaButtonEvent` in MediaSession to accept headset and car controls.
+
+### Handling Scoped Storage & SAF
+
+* Use `ContentResolver` + MediaStore queries for metadata.
+* For user-chosen folders, use SAF (ACTION_OPEN_DOCUMENT_TREE) and persist URI permissions for long running access.
+
+### Testing on Android 11+
+
+* Behavior of background services and foreground notifications tightened — ensure service starts with `startForeground()` quickly to avoid system stop.
+

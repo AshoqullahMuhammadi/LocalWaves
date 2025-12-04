@@ -1,0 +1,82 @@
+<resources>
+    <string name="app_name">LocalWave</string>
+    
+    <!-- Tabs -->
+    <string name="tab_tracks">Tracks</string>
+    <string name="tab_albums">Albums</string>
+    <string name="tab_artists">Artists</string>
+    <string name="tab_folders">Folders</string>
+    <string name="tab_playlists">Playlists</string>
+    
+    <!-- Playback -->
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="shuffle">Shuffle</string>
+    <string name="repeat">Repeat</string>
+    <string name="repeat_one">Repeat one</string>
+    <string name="repeat_all">Repeat all</string>
+    <string name="now_playing">Now Playing</string>
+    <string name="queue">Queue</string>
+    
+    <!-- Actions -->
+    <string name="play_all">Play All</string>
+    <string name="shuffle_all">Shuffle All</string>
+    <string name="play_next">Play next</string>
+    <string name="add_to_queue">Add to queue</string>
+    <string name="add_to_playlist">Add to playlist</string>
+    <string name="go_to_album">Go to album</string>
+    <string name="go_to_artist">Go to artist</string>
+    <string name="remove_from_playlist">Remove from playlist</string>
+    
+    <!-- Playlists -->
+    <string name="create_playlist">Create playlist</string>
+    <string name="rename_playlist">Rename playlist</string>
+    <string name="delete_playlist">Delete playlist</string>
+    <string name="playlist_name">Playlist name</string>
+    <string name="playlist_empty">Playlist is empty</string>
+    <string name="no_playlists">No playlists yet</string>
+    
+    <!-- Library -->
+    <string name="no_tracks">No tracks found</string>
+    <string name="no_albums">No albums found</string>
+    <string name="no_artists">No artists found</string>
+    <string name="no_folders">No folders found</string>
+    <string name="scan_media">Scan media</string>
+    <string name="scanning">Scanning…</string>
+    
+    <!-- Search -->
+    <string name="search">Search</string>
+    <string name="search_hint">Search tracks, albums, artists…</string>
+    <string name="no_results">No results found</string>
+    
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+    <string name="theme">Theme</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System</string>
+    <string name="gapless_playback">Gapless playback</string>
+    <string name="playback_speed">Playback speed</string>
+    <string name="pause_on_headset">Pause on headset disconnect</string>
+    <string name="resume_after_call">Resume after phone call</string>
+    <string name="auto_scan">Auto scan on startup</string>
+    <string name="rescan_library">Rescan library</string>
+    
+    <!-- Permissions -->
+    <string name="permission_required">Permission Required</string>
+    <string name="permission_explanation">LocalWave needs access to your audio files to play music. Your files stay on your device and are never uploaded anywhere.</string>
+    <string name="grant_permission">Grant Permission</string>
+    
+    <!-- Errors -->
+    <string name="error_playback">Playback error</string>
+    <string name="error_file_not_found">File not found</string>
+    <string name="error_permission_denied">Permission denied</string>
+    
+    <!-- Accessibility -->
+    <string name="cd_album_art">Album artwork</string>
+    <string name="cd_track_options">Track options</string>
+    <string name="cd_close">Close</string>
+    <string name="cd_back">Go back</string>
+</resources>

@@ -1,5 +1,6 @@
 package com.example.audioplayer.ui.navigation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -7,9 +8,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,6 +21,7 @@ import com.example.audioplayer.data.model.Playlist
 import com.example.audioplayer.data.model.Track
 import com.example.audioplayer.ui.components.*
 import com.example.audioplayer.ui.screens.*
+import com.example.audioplayer.ui.theme.GradientColors
 import com.example.audioplayer.ui.viewmodel.*
 import kotlinx.coroutines.delay
 import java.net.URLDecoder
@@ -28,6 +30,7 @@ import java.net.URLDecoder
 fun AppNavigation(
     hasPermission: Boolean,
     onRequestPermission: () -> Unit,
+    externalTrack: Track? = null,
     modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
@@ -69,10 +72,23 @@ fun AppNavigation(
     var selectedPlaylistForOptions by remember { mutableStateOf<Playlist?>(null) }
     var showPlaylistOptions by remember { mutableStateOf(false) }
     
+    // External file floating player state
+    var showFloatingPlayer by remember { mutableStateOf(false) }
+    var externalFileTrack by remember { mutableStateOf<Track?>(null) }
+    
     // Current route check
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val showMiniPlayer = currentRoute != Routes.NowPlaying.route && currentTrack != null
+    val showMiniPlayer = currentRoute != Routes.NowPlaying.route && currentTrack != null && !showFloatingPlayer
+    
+    // Handle external file
+    LaunchedEffect(externalTrack) {
+        externalTrack?.let { track ->
+            externalFileTrack = track
+            showFloatingPlayer = true
+            playerViewModel.playTrack(track)
+        }
+    }
     
     // Auto scan on launch - with slight delay to ensure UI is ready
     LaunchedEffect(hasPermission) {
@@ -89,6 +105,7 @@ fun AppNavigation(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .background(brush = Brush.verticalGradient(GradientColors.darkBackground))
         ) {
             NavHost(
                 navController = navController,
@@ -108,6 +125,7 @@ fun AppNavigation(
                             isScanning = isScanning,
                             scanProgress = scanProgress,
                             onTrackClick = { track, trackList ->
+                                showFloatingPlayer = false
                                 playerViewModel.playTrackFromList(trackList, track)
                             },
                             onAlbumClick = { album ->
@@ -368,6 +386,26 @@ fun AppNavigation(
                 }
             }
             
+            // Floating Player for external files
+            if (showFloatingPlayer && currentTrack != null) {
+                FloatingPlayerDialog(
+                    track = currentTrack,
+                    isPlaying = isPlaying,
+                    currentPosition = currentPosition,
+                    duration = duration,
+                    onPlayPauseClick = { playerViewModel.togglePlayPause() },
+                    onPreviousClick = { playerViewModel.seekToPrevious() },
+                    onNextClick = { playerViewModel.seekToNext() },
+                    onSeekTo = { playerViewModel.seekTo(it) },
+                    onDismiss = { showFloatingPlayer = false },
+                    onExpand = {
+                        showFloatingPlayer = false
+                        navController.navigate(Routes.NowPlaying.route)
+                    },
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+            
             // Mini Player
             if (showMiniPlayer) {
                 val progress = if (duration > 0) currentPosition.toFloat() / duration else 0f
@@ -426,7 +464,6 @@ fun AppNavigation(
             onRename = {
                 selectedPlaylistForOptions?.let { playlist ->
                     navController.navigate(Routes.PlaylistDetail.createRoute(playlist.id))
-                    // Will show rename dialog in detail screen
                 }
             },
             onDelete = {
@@ -462,4 +499,3 @@ fun AppNavigation(
         )
     }
 }
-

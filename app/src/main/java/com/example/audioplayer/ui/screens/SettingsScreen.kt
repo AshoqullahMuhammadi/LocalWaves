@@ -1,8 +1,11 @@
 package com.example.audioplayer.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -10,8 +13,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.audioplayer.data.local.preferences.ThemeMode
+import com.example.audioplayer.ui.theme.GradientColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,127 +43,146 @@ fun SettingsScreen(
     var showThemeDialog by remember { mutableStateOf(false) }
     var showSpeedDialog by remember { mutableStateOf(false) }
     
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Settings") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        },
+    Box(
         modifier = modifier
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            // Appearance Section
-            item {
-                SettingsSectionHeader(title = "Appearance")
-            }
-            
-            item {
-                SettingsItem(
-                    title = "Theme",
-                    subtitle = themeMode.name.lowercase().replaceFirstChar { it.uppercase() },
-                    icon = Icons.Default.Palette,
-                    onClick = { showThemeDialog = true }
+            .fillMaxSize()
+            .background(brush = Brush.verticalGradient(GradientColors.darkBackground))
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Top Bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Color.White.copy(alpha = 0.1f), CircleShape)
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
+                }
+                
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                Text(
+                    text = "Settings",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.White
                 )
             }
             
-            // Playback Section
-            item {
-                SettingsSectionHeader(title = "Playback")
-            }
-            
-            item {
-                SettingsSwitchItem(
-                    title = "Gapless playback",
-                    subtitle = "Play tracks without gaps between them",
-                    icon = Icons.Default.GraphicEq,
-                    checked = gaplessPlayback,
-                    onCheckedChange = onGaplessPlaybackChange
-                )
-            }
-            
-            item {
-                SettingsItem(
-                    title = "Default playback speed",
-                    subtitle = "${defaultPlaybackSpeed}x",
-                    icon = Icons.Default.Speed,
-                    onClick = { showSpeedDialog = true }
-                )
-            }
-            
-            // Audio Focus Section
-            item {
-                SettingsSectionHeader(title = "Audio Focus")
-            }
-            
-            item {
-                SettingsSwitchItem(
-                    title = "Pause on headset disconnect",
-                    subtitle = "Automatically pause when headphones are unplugged",
-                    icon = Icons.Default.Headphones,
-                    checked = pauseOnHeadsetDisconnect,
-                    onCheckedChange = onPauseOnHeadsetDisconnectChange
-                )
-            }
-            
-            item {
-                SettingsSwitchItem(
-                    title = "Resume after phone call",
-                    subtitle = "Automatically resume playback after a call ends",
-                    icon = Icons.Default.Phone,
-                    checked = resumeAfterCall,
-                    onCheckedChange = onResumeAfterCallChange
-                )
-            }
-            
-            // Library Section
-            item {
-                SettingsSectionHeader(title = "Library")
-            }
-            
-            item {
-                SettingsSwitchItem(
-                    title = "Auto scan on startup",
-                    subtitle = "Automatically scan for new audio files when app opens",
-                    icon = Icons.Default.Refresh,
-                    checked = autoScanOnStartup,
-                    onCheckedChange = onAutoScanOnStartupChange
-                )
-            }
-            
-            item {
-                SettingsItem(
-                    title = "Rescan library",
-                    subtitle = "Scan device for audio files",
-                    icon = Icons.Default.FolderOpen,
-                    onClick = onRescanLibrary
-                )
-            }
-            
-            // About Section
-            item {
-                SettingsSectionHeader(title = "About")
-            }
-            
-            item {
-                SettingsItem(
-                    title = "LocalWave",
-                    subtitle = "Version 1.0.0",
-                    icon = Icons.Default.Info,
-                    onClick = { }
-                )
-            }
-            
-            item {
-                Spacer(modifier = Modifier.height(32.dp))
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 120.dp)
+            ) {
+                // Appearance Section
+                item {
+                    SettingsSectionHeader(title = "Appearance")
+                }
+                
+                item {
+                    SettingsItem(
+                        title = "Theme",
+                        subtitle = themeMode.name.lowercase().replaceFirstChar { it.uppercase() },
+                        icon = Icons.Default.Palette,
+                        onClick = { showThemeDialog = true }
+                    )
+                }
+                
+                // Playback Section
+                item {
+                    SettingsSectionHeader(title = "Playback")
+                }
+                
+                item {
+                    SettingsSwitchItem(
+                        title = "Gapless playback",
+                        subtitle = "Play tracks without gaps between them",
+                        icon = Icons.Default.GraphicEq,
+                        checked = gaplessPlayback,
+                        onCheckedChange = onGaplessPlaybackChange
+                    )
+                }
+                
+                item {
+                    SettingsItem(
+                        title = "Default playback speed",
+                        subtitle = "${defaultPlaybackSpeed}x",
+                        icon = Icons.Default.Speed,
+                        onClick = { showSpeedDialog = true }
+                    )
+                }
+                
+                // Audio Focus Section
+                item {
+                    SettingsSectionHeader(title = "Audio Focus")
+                }
+                
+                item {
+                    SettingsSwitchItem(
+                        title = "Pause on headset disconnect",
+                        subtitle = "Automatically pause when headphones are unplugged",
+                        icon = Icons.Default.Headphones,
+                        checked = pauseOnHeadsetDisconnect,
+                        onCheckedChange = onPauseOnHeadsetDisconnectChange
+                    )
+                }
+                
+                item {
+                    SettingsSwitchItem(
+                        title = "Resume after phone call",
+                        subtitle = "Automatically resume playback after a call ends",
+                        icon = Icons.Default.Phone,
+                        checked = resumeAfterCall,
+                        onCheckedChange = onResumeAfterCallChange
+                    )
+                }
+                
+                // Library Section
+                item {
+                    SettingsSectionHeader(title = "Library")
+                }
+                
+                item {
+                    SettingsSwitchItem(
+                        title = "Auto scan on startup",
+                        subtitle = "Automatically scan for new audio files when app opens",
+                        icon = Icons.Default.Refresh,
+                        checked = autoScanOnStartup,
+                        onCheckedChange = onAutoScanOnStartupChange
+                    )
+                }
+                
+                item {
+                    SettingsItem(
+                        title = "Rescan library",
+                        subtitle = "Scan device for audio files",
+                        icon = Icons.Default.FolderOpen,
+                        onClick = onRescanLibrary
+                    )
+                }
+                
+                // About Section
+                item {
+                    SettingsSectionHeader(title = "About")
+                }
+                
+                item {
+                    SettingsItem(
+                        title = "LocalWave",
+                        subtitle = "Version 1.0.0",
+                        icon = Icons.Default.Info,
+                        onClick = { }
+                    )
+                }
             }
         }
     }
@@ -166,7 +191,8 @@ fun SettingsScreen(
     if (showThemeDialog) {
         AlertDialog(
             onDismissRequest = { showThemeDialog = false },
-            title = { Text("Choose Theme") },
+            title = { Text("Choose Theme", color = Color.White) },
+            containerColor = Color(0xFF1A1A2E),
             text = {
                 Column {
                     ThemeMode.entries.forEach { mode ->
@@ -185,17 +211,23 @@ fun SettingsScreen(
                                 onClick = {
                                     onThemeChange(mode)
                                     showThemeDialog = false
-                                }
+                                },
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = Color(0xFFE91E63)
+                                )
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = mode.name.lowercase().replaceFirstChar { it.uppercase() })
+                            Text(
+                                text = mode.name.lowercase().replaceFirstChar { it.uppercase() },
+                                color = Color.White
+                            )
                         }
                     }
                 }
             },
             confirmButton = {
                 TextButton(onClick = { showThemeDialog = false }) {
-                    Text("Cancel")
+                    Text("Cancel", color = Color(0xFFE91E63))
                 }
             }
         )
@@ -206,7 +238,8 @@ fun SettingsScreen(
         val speeds = listOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f)
         AlertDialog(
             onDismissRequest = { showSpeedDialog = false },
-            title = { Text("Default Playback Speed") },
+            title = { Text("Default Playback Speed", color = Color.White) },
+            containerColor = Color(0xFF1A1A2E),
             text = {
                 Column {
                     speeds.forEach { speed ->
@@ -225,17 +258,20 @@ fun SettingsScreen(
                                 onClick = {
                                     onDefaultPlaybackSpeedChange(speed)
                                     showSpeedDialog = false
-                                }
+                                },
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = Color(0xFFE91E63)
+                                )
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "${speed}x")
+                            Text(text = "${speed}x", color = Color.White)
                         }
                     }
                 }
             },
             confirmButton = {
                 TextButton(onClick = { showSpeedDialog = false }) {
-                    Text("Cancel")
+                    Text("Cancel", color = Color(0xFFE91E63))
                 }
             }
         )
@@ -247,8 +283,8 @@ private fun SettingsSectionHeader(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+        color = Color(0xFFE91E63),
+        modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
     )
 }
 
@@ -263,25 +299,35 @@ private fun SettingsItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(24.dp)
-        )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(10.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+        
         Spacer(modifier = Modifier.width(16.dp))
+        
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White
             )
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.White.copy(alpha = 0.6f)
             )
         }
     }
@@ -299,31 +345,47 @@ private fun SettingsSwitchItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onCheckedChange(!checked) }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(24.dp)
-        )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(10.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+        
         Spacer(modifier = Modifier.width(16.dp))
+        
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White
             )
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.White.copy(alpha = 0.6f)
             )
         }
+        
         Switch(
             checked = checked,
-            onCheckedChange = onCheckedChange
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = Color(0xFFE91E63),
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = Color.White.copy(alpha = 0.2f)
+            )
         )
     }
 }
-
